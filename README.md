@@ -24,30 +24,30 @@ lmao
     > This should result in a console output shown below:
     >
     > ```plain
-    >Fri Aug 26 20:20:28 2022
-    >+-----------------------------------------------------------------------------+
-    >| NVIDIA-SMI 515.65.01    Driver Version: 516.94       CUDA Version: 11.7     |
-    >|-------------------------------+----------------------+----------------------+
-    >| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
-    >| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
-    >|                               |                      |               MIG M. |
-    >|===============================+======================+======================|
-    >|   0  NVIDIA GeForce ...  On   | 00000000:2B:00.0  On |                  N/A |
-    >| 41%   50C    P5    96W / 371W |  21480MiB / 24576MiB |      0%      Default |
-    >|                               |                      |                  N/A |
-    >+-------------------------------+----------------------+----------------------+
+    > Fri Aug 26 20:20:28 2022
+    > +-----------------------------------------------------------------------------+
+    > | NVIDIA-SMI 515.65.01    Driver Version: 516.94       CUDA Version: 11.7     |
+    > |-------------------------------+----------------------+----------------------+
+    > | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    > | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    > |                               |                      |               MIG M. |
+    > |===============================+======================+======================|
+    > |   0  NVIDIA GeForce ...  On   | 00000000:2B:00.0  On |                  N/A |
+    > | 41%   50C    P5    96W / 371W |  21480MiB / 24576MiB |      0%      Default |
+    > |                               |                      |                  N/A |
+    > +-------------------------------+----------------------+----------------------+
     >
-    >+-----------------------------------------------------------------------------+
-    >| Processes:                                                                  |
-    >|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
-    >|        ID   ID                                                   Usage      |
-    >|=============================================================================|
-    >|    0   N/A  N/A        88      C   /tritonserver                   N/A      |
-    >+-----------------------------------------------------------------------------+
+    > +-----------------------------------------------------------------------------+
+    > | Processes:                                                                  |
+    > |  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+    > |        ID   ID                                                   Usage      |
+    > |=============================================================================|
+    > |    0   N/A  N/A        88      C   /tritonserver                   N/A      |
+    > +-----------------------------------------------------------------------------+
     > ```
 
 1. Install [7z-zstd](https://github.com/mcmilk/7-Zip-zstd).
-    > As a suggerent, you can add the dicovery of 7z-zstd (usually `C:\Program Files\7-Zip-Zstandard`) to the `PATH`. Then restart Terminal and open `pwsh`, type `Get-Command -Name 7z` and press Enter. if everything is ok, you will see some information about `7z.exe` instead of errors or warnings message.
+    > As a suggestion, you can add the directory of 7z-zstd (usually `C:\Program Files\7-Zip-Zstandard`) to the `PATH`. Then restart Terminal and open `pwsh`, type `Get-Command -Name 7z` and press Enter. if everything is ok, you will see some information about `7z.exe` instead of errors or warnings message.
 1. Run the setup script to choose a model to use. This will download the model from Huggingface and then convert it for use with FasterTransformer.
 
     ```plain
