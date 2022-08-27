@@ -19,7 +19,7 @@ lmao
 
 ## Setup
 
-1. Install Docker and Docker Compose, The easiest way to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+1. Install Docker and Docker Compose, The easiest way is to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
     > You can run `docker run --rm --gpus all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi` to test the CUDA working setup.
     > This should result in a console output shown below:
     >
