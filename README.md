@@ -64,7 +64,7 @@ lmao
     Enter number of GPUs [1]:
     Where do you want to save the model [C:\Users\Frederisk\Documents\GitHub\fauxpilot\models]?:
     Downloading the model from HuggingFace, this will take a while...
-    Done! Now run ./launch.ps1 to start the FauxPilot server.
+    Done! Now run .\launch.ps1 to start the FauxPilot server.
     ```
 
 1. Then you can just run `.\launch.ps1`. This process can take considerable amount of time to load. In general, It's already loaded when you see output like this:

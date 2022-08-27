@@ -98,4 +98,4 @@ else {
     [ApplicationInfo]$docker = Get-Command -Name 'docker';
     &$docker run --rm -v ${modelDir}:/model -e MODEL=${model} -e NUM_GPUS=$numGpus moyix/model_converter:latest;
 }
-Write-Host "Done! Now run ./launch.ps1 to start the FauxPilot server."
+Write-Host "Done! Now run .\launch.ps1 to start the FauxPilot server."
