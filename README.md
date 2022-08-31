@@ -1,13 +1,13 @@
 # FauxPilot Windows
 
-For Linux or WLS2, click [here](https://github.com/moyix/fauxpilot).
+For Linux or WSL2, click [here](https://github.com/moyix/fauxpilot).
 
 This is an attempt to build a locally hosted version of [GitHub Copilot](https://copilot.github.com/). It uses the [SalesForce CodeGen](https://github.com/salesforce/CodeGen) models inside of NVIDIA's [Triton Inference Server](https://developer.nvidia.com/nvidia-triton-inference-server) with the [FasterTransformer backend](https://github.com/triton-inference-server/fastertransformer_backend/).
 
 ## Prerequisites
 
 - Docker
-- docker-compose (version >= 1.28)
+- docker compose (version >= 1.28)
 - NVIDIA GPU (Compute Capability >= 7.0, That is TITAN V, RTX 20XX or newer)
 - 7z-zstd
 
