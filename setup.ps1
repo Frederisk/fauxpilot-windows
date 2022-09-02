@@ -1,5 +1,6 @@
 using namespace System;
 using namespace System.Management.Automation;
+using namespace System.IO;
 
 if (Get-Item -Path "config.env" -ErrorAction SilentlyContinue) {
     Write-Host @"
@@ -42,10 +43,9 @@ if ($numGpus -eq 0) {
 }
 
 # Read model directory
-# [String]$pwd = Get-Location;
-[String]$modelDir = Read-Host -Prompt "Where do you want to save the model [$pwd\models]?"
+[String]$modelDir = Read-Host -Prompt "Where do you want to save the model [$([Path]::Combine($pwd.Path, "models"))]?"
 if ([String]::IsNullOrWhiteSpace($modelDir)) {
-    $modelDir = "$pwd\models";
+    $modelDir = ([Path]::Combine($pwd.Path, "models"));
 }
 
 # Write config.env
@@ -55,10 +55,10 @@ NUM_GPUS=$numGpus
 MODEL_DIR=$modelDir
 "@ | Out-Null;
 
-if (Get-Item -Path "$modelDir\$model-${numGpus}gpu" -ErrorAction SilentlyContinue) {
+if (Get-Item -Path ([Path]::Combine($modelDir, "$model-${numGpus}gpu")) -ErrorAction SilentlyContinue) {
     Write-Host @"
 Converted model for $model-${numGpus}gpu already exists, skipping
-Please delete $modelDir\$model-${numGpus}gpu if you want to re-convert it
+Please delete $([Path]::Combine($modelDir, "$model-${numGpus}gpu")) if you want to re-convert it
 "@ | Out-Null;
     Exit 0;
 }
@@ -71,25 +71,35 @@ if ($numGpus -le 2) {
     Write-Host "Downloading the model from HuggingFace, this will take a while..." | Out-Null;
     [String]$scriptDir = $PSScriptRoot;
     [String]$dest = "$model-${numGpus}gpu";
-    [String]$archive = "$modelDir\$dest.tar.zst";
-    Copy-Item -Path "$scriptDir\converter\models\$dest" -Destination $modelDir -Recurse | Out-Null;
+    [String]$archive = ([Path]::Combine($modelDir, "$dest.tar.zst"));
+    Copy-Item -Path ([Path]::Combine($scriptDir, 'converter', 'models', $dest)) -Destination $modelDir -Recurse | Out-Null;
     Invoke-WebRequest -Uri "https://huggingface.co/moyix/$model-gptj/resolve/main/$model-${numGpus}gpu.tar.zst" -OutFile $archive;
 
-    [ApplicationInfo]$7z = Get-Command -Name '7z' -ErrorAction SilentlyContinue;
-    if (-not $7z) {
-        $7z = Get-Command -Name "$env:ProgramFiles\7-Zip-Zstandard\7z.exe" -ErrorAction SilentlyContinue;
+    if ($IsWindows -or ($null -eq $IsWindows)) {
+        [ApplicationInfo]$7z = Get-Command -Name '7z' -ErrorAction SilentlyContinue;
+        if (-not $7z) {
+            $7z = Get-Command -Name "$env:ProgramFiles\7-Zip-Zstandard\7z.exe" -ErrorAction SilentlyContinue;
+        }
+        if (-not $7z) {
+            $7z = Get-Command -Name "${env:ProgramFiles(x86)}\7-Zip-Zstandard\7z.exe";
+        }
+        # if(-not $7z){
+        #     Write-Error -Message "Command 7z not found" -Category ObjectNotFound -TargetObject $7z;
+        #     Exit 1;
+        # }
+        # Powershell will buffer the input to the second 7z process so can consume a lot of memory if your tar file is large.
+        # https://stackoverflow.com/a/14699663/10135995
+        $cmd = Get-Command -Name 'cmd';
+        &$cmd /C "`"$($7z.Source)`" x $archive -so | `"$($7z.Source)`" x -aoa -si -ttar -o`"$modelDir`"";
     }
-    if (-not $7z) {
-        $7z = Get-Command -Name "${env:ProgramFiles(x86)}\7-Zip-Zstandard\7z.exe";
+    elseif ($IsLinux -or $IsMacOS) {
+        $bash = Get-Command -Name 'bash';
+        &$bash -c "zstd -dc '$archive' | tar -xf - -C '$modelDir'";
     }
-    # if(-not $7z){
-    #     Write-Error -Message "Command 7z not found" -Category ObjectNotFound -TargetObject $7z;
-    #     Exit 1;
-    # }
-    # Powershell will buffer the input to the second 7z process so can consume a lot of memory if your tar file is large.
-    # https://stackoverflow.com/a/14699663/10135995
-    $cmd = Get-Command -Name 'cmd';
-    &$cmd /C "`"$($7z.Source)`" x $archive -so | `"$($7z.Source)`" x -aoa -si -ttar -o`"$modelDir`"";
+    else {
+        Write-Host "Unknown OS. Please unzip $archive in the same folder.";
+        Exit 0;
+    }
 
     Remove-Item -Path $archive -Force;
 }
@@ -98,4 +108,4 @@ else {
     [ApplicationInfo]$docker = Get-Command -Name 'docker';
     &$docker run --rm -v ${modelDir}:/model -e MODEL=${model} -e NUM_GPUS=$numGpus moyix/model_converter:latest;
 }
-Write-Host "Done! Now run .\launch.ps1 to start the FauxPilot server."
+Write-Host "Done! Now run $([Path]::Combine('.', 'launch.ps1')) to start the FauxPilot server."
