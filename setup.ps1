@@ -89,11 +89,11 @@ if ($numGpus -le 2) {
         # }
         # Powershell will buffer the input to the second 7z process so can consume a lot of memory if your tar file is large.
         # https://stackoverflow.com/a/14699663/10135995
-        $cmd = Get-Command -Name 'cmd';
+        [ApplicationInfo]$cmd = Get-Command -Name 'cmd';
         &$cmd /C "`"$($7z.Source)`" x $archive -so | `"$($7z.Source)`" x -aoa -si -ttar -o`"$modelDir`"";
     }
     elseif ($IsLinux -or $IsMacOS) {
-        $bash = Get-Command -Name 'bash';
+        [ApplicationInfo]$bash = Get-Command -Name 'bash';
         &$bash -c "zstd -dc '$archive' | tar -xf - -C '$modelDir'";
     }
     else {

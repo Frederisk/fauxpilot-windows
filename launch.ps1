@@ -14,13 +14,16 @@ Get-Content -Path 'config.env' | ForEach-Object -Process {
     # [Environment]::SetEnvironmentVariable($name, $value);
 }
 
-[String]$dockerCompose = Get-Command -Name 'docker-compose' -ErrorAction SilentlyContinue;
-if ($null -eq $dockerCompose) {
-    $dockerCompose = 'docker compose';
-}
 
 [Environment]::SetEnvironmentVariable('NUM_GPUS', $NUM_GPUS);
 [Environment]::SetEnvironmentVariable('MODEL_DIR', ([Path]::Combine("$MODEL_DIR", "$MODEL-${NUM_GPUS}gpu")))
 [Environment]::SetEnvironmentVariable('GPUS', 0..($NUM_GPUS - 1) -join ',');
 
-&$dockerCompose up
+[ApplicationInfo]$dockerCompose = Get-Command -Name 'docker-compose' -ErrorAction SilentlyContinue;
+if ($null -ne $dockerCompose) {
+    &$dockerCompose up
+}
+else {
+    [ApplicationInfo]$docker = Get-Command -Name 'docker';
+    &$docker compose up
+}
