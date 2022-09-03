@@ -1,15 +1,17 @@
 # FauxPilot Windows
 
-For Linux or WSL2, click [here](https://github.com/moyix/fauxpilot).
+For Linux or WSL2, click [here](https://github.com/moyix/fauxpilot). This repository is also available on Linux if you are also using `pwsh` on it.
 
 This is an attempt to build a locally hosted version of [GitHub Copilot](https://copilot.github.com/). It uses the [SalesForce CodeGen](https://github.com/salesforce/CodeGen) models inside of NVIDIA's [Triton Inference Server](https://developer.nvidia.com/nvidia-triton-inference-server) with the [FasterTransformer backend](https://github.com/triton-inference-server/fastertransformer_backend/).
 
 ## Prerequisites
 
+- Windows PowerShell or pwsh
 - Docker
 - docker compose (version >= 1.28)
 - NVIDIA GPU (Compute Capability >= 7.0, That is TITAN V, RTX 20XX or newer)
 - 7z-zstd
+    > For Linux, you need zstd instead of this.
 
 Note that the VRAM requirements listed by `setup.sh` are *total* -- if you have multiple GPUs, you can split the model across them. So, if you have two NVIDIA RTX 3080 GPUs, you *should* be able to run the 6B model by putting half on each GPU.
 
@@ -70,6 +72,12 @@ lmao
 1. Then you can just run `.\launch.ps1`. This process can take considerable amount of time to load. In general, It's already loaded when you see output like this:
 
     ```plain
+    ......
+    fauxpilot-windows-triton-1         | +-------------------+---------+--------+
+    fauxpilot-windows-triton-1         | | Model             | Version | Status |
+    fauxpilot-windows-triton-1         | +-------------------+---------+--------+
+    fauxpilot-windows-triton-1         | | fastertransformer | 1       | READY  |
+    fauxpilot-windows-triton-1         | +-------------------+---------+--------+
     ......
     fauxpilot-triton-1         | I0803 01:51:04.740423 93 grpc_server.cc:4587] Started GRPCInferenceService at 0.0.0.0:8001
     fauxpilot-triton-1         | I0803 01:51:04.740608 93 http_server.cc:3303] Started HTTPService at 0.0.0.0:8000
