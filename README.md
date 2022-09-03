@@ -13,7 +13,7 @@ This is an attempt to build a locally hosted version of [GitHub Copilot](https:/
 - 7z-zstd
     > For Linux, you need zstd instead of this.
 
-Note that the VRAM requirements listed by `setup.sh` are *total* -- if you have multiple GPUs, you can split the model across them. So, if you have two NVIDIA RTX 3080 GPUs, you *should* be able to run the 6B model by putting half on each GPU.
+Note that the VRAM requirements listed by `setup.ps1` are *total* -- if you have multiple GPUs, you can split the model across them. So, if you have two NVIDIA RTX 3080 GPUs, you *should* be able to run the 6B model by putting half on each GPU.
 
 ## Support and Warranty
 
