@@ -38,7 +38,7 @@ Write-Host -Message @"
 
 # Read number of GPUs
 [Int32]$numGpus = Read-Host -Prompt "Enter number of GPUs [1]";
-if ($numGpus -eq 0) {
+if ($numGpus -le 0) {
     $numGpus = 1;
 }
 
@@ -73,7 +73,7 @@ if ($numGpus -le 2) {
     [String]$dest = "$model-${numGpus}gpu";
     [String]$archive = ([Path]::Combine($modelDir, "$dest.tar.zst"));
     Copy-Item -Path ([Path]::Combine($scriptDir, 'converter', 'models', $dest)) -Destination $modelDir -Recurse | Out-Null;
-    Invoke-WebRequest -Uri "https://huggingface.co/moyix/$model-gptj/resolve/main/$model-${numGpus}gpu.tar.zst" -OutFile $archive;
+    Invoke-WebRequest -Uri "https://huggingface.co/moyix/$model-gptj/resolve/main/$model-${numGpus}gpu.tar.zst" -OutFile $archive | Out-Null;
 
     if ($IsWindows -or ($null -eq $IsWindows)) {
         [ApplicationInfo]$7z = Get-Command -Name '7z' -ErrorAction SilentlyContinue;
@@ -97,15 +97,15 @@ if ($numGpus -le 2) {
         &$bash -c "zstd -dc '$archive' | tar -xf - -C '$modelDir'";
     }
     else {
-        Write-Host "Unknown OS. Please unzip $archive in the same folder.";
+        Write-Host "Unknown OS. Please unzip $archive in the same folder." | Out-Null;
         Exit 0;
     }
 
-    Remove-Item -Path $archive -Force;
+    Remove-Item -Path $archive -Force | Out-Null;
 }
 else {
-    Write-Host "Downloading and converting the model, this will take a while..."
+    Write-Host "Downloading and converting the model, this will take a while..." | Out-Null;
     [ApplicationInfo]$docker = Get-Command -Name 'docker';
     &$docker run --rm -v ${modelDir}:/model -e MODEL=${model} -e NUM_GPUS=$numGpus moyix/model_converter:latest;
 }
-Write-Host "Done! Now run $([Path]::Combine('.', 'launch.ps1')) to start the FauxPilot server."
+Write-Host "Done! Now run $([Path]::Combine('.', 'launch.ps1')) to start the FauxPilot server." | Out-Null;
