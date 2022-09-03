@@ -16,7 +16,7 @@ services:
           devices:
             - driver: nvidia
               count: all
-              capabilities: [gpu]
+              capabilities: [ gpu ]
   copilot_proxy:
     image: moyix/copilot_proxy:latest
     command: python3 -m flask run --host=0.0.0.0 --port=5000
