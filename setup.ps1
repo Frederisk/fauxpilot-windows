@@ -179,12 +179,12 @@ if ($NumGpus -le 2) {
     # DEBUG: NotUnzip
     if (-not $DebugMode.Contains('NotUnzip')) {
         if ($IsWindows -or ($null -eq $IsWindows)) {
-            [ApplicationInfo]$7z = Get-Command -Name '7z' -ErrorAction SilentlyContinue;
+            [ApplicationInfo]$7z = Get-Command -Name "$env:ProgramFiles\7-Zip-Zstandard\7z.exe" -ErrorAction SilentlyContinue;
             if (-not $7z) {
-                $7z = Get-Command -Name "$env:ProgramFiles\7-Zip-Zstandard\7z.exe" -ErrorAction SilentlyContinue;
+                $7z = Get-Command -Name "${env:ProgramFiles(x86)}\7-Zip-Zstandard\7z.exe" -ErrorAction SilentlyContinue;
             }
             if (-not $7z) {
-                $7z = Get-Command -Name "${env:ProgramFiles(x86)}\7-Zip-Zstandard\7z.exe";
+                $7z = Get-Command -Name '7z';
             }
             # if(-not $7z){
             #     Write-Error -Message "Command 7z not found" -Category ObjectNotFound -TargetObject $7z;
