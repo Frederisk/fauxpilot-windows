@@ -1,14 +1,58 @@
+#!/usr/bin/env -S pwsh -nop
+#requires -version 5
+
+<#PSScriptInfo
+.VERSION 0.0.1
+.GUID
+.AUTHOR Rowe Wilson Frederisk Holme
+.PROJECTURI https://github.com/Frederisk/fauxpilot-windows
+.COMPANYNAME
+.COPYRIGHT
+.TAGS
+.LICENSEURI https://github.com/Frederisk/fauxpilot-windows/blob/main/LICENSE.txt
+.ICONURI
+.EXTERNALMODULEDEPENDENCIES
+.REQUIREDSCRIPTS
+.EXTERNALSCRIPTDEPENDENCIES
+.RELEASENOTES
+#>
+
+<#
+.SYNOPSIS
+    fauxpilot-windows-launch - Start fauxpilot in Windows.
+.DESCRIPTION
+
+.PARAMETER Help
+    Display the full help message.
+.INPUTS
+    System.String
+.OUTPUTS
+    System.Object
+.NOTES
+
+#>
+
 using namespace System;
 using namespace System.Management.Automation;
 using namespace System.IO;
 
-# Read in config.env file; error if not found
-if (-not (Get-Item -Path 'config.env' -ErrorAction SilentlyContinue)) {
-    Write-Error "config.env not found, please run setup.ps1" | Out-Null;
-    Exit 1;
+[CmdletBinding()]
+param (
+    [Switch][Alias('h', '?')]$Help
+)
+
+if ($Help) {
+    Get-Help ($MyInvocation.MyCommand.Definition) -Full | Out-Host -Paging;
+    exit 0;
 }
 
-Get-Content -Path 'config.env' | ForEach-Object -Process {
+# Read in config.env file; error if not found
+if (-not (Get-Item -Path 'config.env' -ErrorAction SilentlyContinue)) {
+    Write-Error -Message "config.env not found, please run setup.ps1" | Out-Null;
+    exit 1;
+}
+
+Get-Content -Path 'config.env' -Encoding utf8NoBOM | ForEach-Object -Process {
     $name, $value = $_.Split('=');
     Set-Variable -Name $name -Value $value;
     # [Environment]::SetEnvironmentVariable($name, $value);
