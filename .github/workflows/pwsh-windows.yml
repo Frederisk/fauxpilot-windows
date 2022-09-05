@@ -1,4 +1,4 @@
-name: FauxPilot Test
+name: PowerShell - Windows
 
 on:
   push:

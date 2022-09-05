@@ -1,0 +1,26 @@
+name: PowerShell - macOS
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  macos-test:
+    name: Setup test in MacOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install zstd
+        shell: pwsh
+        run: |
+          brew install zstd
+      - name: Run setup script
+        shell: pwsh
+        run: |
+          ./setup.ps1 -Silent -Model codegen-350M-multi -DebugMode NotRemove -Verbose;
+          if (-not $?) {
+            Write-Error -Message "Setup failed" | Out-Null;
+          }

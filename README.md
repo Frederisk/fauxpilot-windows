@@ -1,6 +1,9 @@
 # FauxPilot Windows
 
-[![FauxPilot Test](https://github.com/Frederisk/fauxpilot-windows/actions/workflows/fauxpilot-test.yml/badge.svg)](https://github.com/Frederisk/fauxpilot-windows/actions/workflows/fauxpilot-test.yml)
+[![PowerShell - Windows](https://github.com/Frederisk/fauxpilot-windows/actions/workflows/pwsh-windows.yml/badge.svg)](https://github.com/Frederisk/fauxpilot-windows/actions/workflows/pwsh-windows.yml)
+[![PowerShell - Linux](https://github.com/Frederisk/fauxpilot-windows/actions/workflows/pwsh-linux.yml/badge.svg)](https://github.com/Frederisk/fauxpilot-windows/actions/workflows/pwsh-linux.yml)
+[![PowerShell - macOS](https://github.com/Frederisk/fauxpilot-windows/actions/workflows/pwsh-macos.yml/badge.svg)](https://github.com/Frederisk/fauxpilot-windows/actions/workflows/pwsh-macos.yml)
+
 
 For Linux or WSL2, click [here](https://github.com/moyix/fauxpilot). This repository is also available on Linux if you are also using `pwsh` on it.
 
