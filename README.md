@@ -1,5 +1,7 @@
 # FauxPilot Windows
 
+[![FauxPilot Test](https://github.com/Frederisk/fauxpilot-windows/actions/workflows/fauxpilot-test.yml/badge.svg)](https://github.com/Frederisk/fauxpilot-windows/actions/workflows/fauxpilot-test.yml)
+
 For Linux or WSL2, click [here](https://github.com/moyix/fauxpilot). This repository is also available on Linux if you are also using `pwsh` on it.
 
 This is an attempt to build a locally hosted version of [GitHub Copilot](https://copilot.github.com/). It uses the [SalesForce CodeGen](https://github.com/salesforce/CodeGen) models inside of NVIDIA's [Triton Inference Server](https://developer.nvidia.com/nvidia-triton-inference-server) with the [FasterTransformer backend](https://github.com/triton-inference-server/fastertransformer_backend/).
@@ -50,6 +52,7 @@ lmao
 
 1. Install [7z-zstd](https://github.com/mcmilk/7-Zip-zstd).
     > As a suggestion, you can add the directory of 7z-zstd (usually `C:\Program Files\7-Zip-Zstandard`) to the `PATH`. Then restart Terminal and open `pwsh`, type `Get-Command -Name 7z` and press Enter. if everything is ok, you will see some information about `7z.exe` instead of errors or warnings message.
+
 1. Run the setup script to choose a model to use. This will download the model from Huggingface and then convert it for use with FasterTransformer.
 
     ```plain
@@ -67,6 +70,12 @@ lmao
     Where do you want to save the model [C:\Users\Frederisk\Documents\GitHub\fauxpilot\models]?:
     Downloading the model from HuggingFace, this will take a while...
     Done! Now run .\launch.ps1 to start the FauxPilot server.
+    ```
+
+    Alternatively you can set options by passing arguments. You can go through `.\launch.ps1 -Help` or `Get-Help -Name .\launch.ps1 -Full` for more details.
+
+    ```powershell
+    .\setup.ps1 -Silent -Model codegen-6B-multi -NumGpus 1 -ModelDir C:\foo
     ```
 
 1. Then you can just run `.\launch.ps1`. This process can take considerable amount of time to load. In general, It's already loaded when you see output like this:
