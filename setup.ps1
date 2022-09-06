@@ -75,7 +75,7 @@ if ($Help) {
 
 # DEBUG: ForceCreate
 if ((Get-Item -Path "config.env" -ErrorAction SilentlyContinue) -and (-not $DebugMode.Contains('ForceCreate'))) {
-    Write-Host -Message @"
+    Write-Host -Object @"
 config.env already exists, skipping
 Please delete config.env if you want to re-run this script
 "@ | Out-Null;
@@ -87,7 +87,7 @@ if ([String]::IsNullOrWhiteSpace($Model)) {
         $Model = 'codegen-6B-multi';
     }
     else {
-        Write-Host -Message @"
+        Write-Host -Object @"
 [1] codegen-350M-mono (2GB total VRAM required; Python-only)
 [2] codegen-350M-multi (2GB total VRAM required; multi-language)
 [3] codegen-2B-mono (7GB total VRAM required; Python-only)
@@ -137,7 +137,8 @@ if ([String]::IsNullOrWhiteSpace($ModelDir)) {
         $ModelDir = Read-Host -Prompt "Where do you want to save the model [$([Path]::Combine($pwd.Path, "models"))]?";
         if ([String]::IsNullOrWhiteSpace($ModelDir)) {
             $ModelDir = $defaultDir;
-        } else {
+        }
+        else {
             $ModelDir = [Path]::GetFullPath($ModelDir);
         }
     }
@@ -152,7 +153,7 @@ MODEL_DIR=$ModelDir
 
 # DEBUG: ForceCreate
 if ((Get-Item -Path ([Path]::Combine($ModelDir, "$Model-${NumGpus}gpu")) -ErrorAction SilentlyContinue) -and (-not $DebugMode.Contains('ForceCreate'))) {
-    Write-Host -Message @"
+    Write-Host -Object @"
 Converted model for $Model-${NumGpus}gpu already exists, skipping
 Please delete $([Path]::Combine($ModelDir, "$Model-${NumGpus}gpu")) if you want to re-convert it
 "@ | Out-Null;
@@ -164,7 +165,7 @@ New-Item -Path $ModelDir -ItemType Directory -Force | Out-Null;
 
 # For some of the models we can download it pre-converted.
 if ($NumGpus -le 2) {
-    Write-Host -Message "Downloading the model from HuggingFace, this will take a while..." | Out-Null;
+    Write-Host -Object "Downloading the model from HuggingFace, this will take a while..." | Out-Null;
     [String]$scriptDir = $PSScriptRoot;
     [String]$dest = "$Model-${NumGpus}gpu";
     [String]$archive = ([Path]::Combine($ModelDir, "$dest.tar.zst"));
@@ -172,10 +173,16 @@ if ($NumGpus -le 2) {
 
     # DEBUG: NotDownload
     if (-not $DebugMode.Contains('NotDownload')) {
+        # Progress bar can significantly impact cmdlet performance
+        # https://github.com/PowerShell/PowerShell/issues/2138
+        if ($PSVersionTable.PSVersion.Major -lt 6) {
+            $ProgressPreference = 'SilentlyContinue';
+        }
+
         Invoke-WebRequest -Uri "https://huggingface.co/moyix/$Model-gptj/resolve/main/$Model-${NumGpus}gpu.tar.zst" -OutFile $archive | Out-Null;
     }
     else {
-        Write-Host -Message "Download skipped: https://huggingface.co/moyix/$Model-gptj/resolve/main/$Model-${NumGpus}gpu.tar.zst" | Out-Null;
+        Write-Host -Object "Download skipped: https://huggingface.co/moyix/$Model-gptj/resolve/main/$Model-${NumGpus}gpu.tar.zst" | Out-Null;
     }
 
     # DEBUG: NotUnzip
@@ -202,7 +209,7 @@ if ($NumGpus -le 2) {
             &$bash -c "zstd -dc '$archive' | tar -xf - -C '$ModelDir'";
         }
         else {
-            Write-Host -Message "Unknown OS. Please unzip $archive in the same folder by yourself." | Out-Null;
+            Write-Host -Object "Unknown OS. Please unzip $archive in the same folder by yourself." | Out-Null;
             exit 1;
         }
     }
@@ -213,8 +220,8 @@ if ($NumGpus -le 2) {
     }
 }
 else {
-    Write-Host -Message "Downloading and converting the model, this will take a while..." | Out-Null;
+    Write-Host -Object "Downloading and converting the model, this will take a while..." | Out-Null;
     [ApplicationInfo]$docker = Get-Command -Name 'docker';
     &$docker run --rm -v ${ModelDir}:/model -e MODEL=$NumGpus -e NUM_GPUS=$NumGpus moyix/model_converter:latest;
 }
-Write-Host -Message "Done! Now run $([Path]::Combine('.', 'launch.ps1')) to start the FauxPilot server." | Out-Null;
+Write-Host -Object "Done! Now run $([Path]::Combine('.', 'launch.ps1')) to start the FauxPilot server." | Out-Null;
