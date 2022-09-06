@@ -137,6 +137,8 @@ if ([String]::IsNullOrWhiteSpace($ModelDir)) {
         $ModelDir = Read-Host -Prompt "Where do you want to save the model [$([Path]::Combine($pwd.Path, "models"))]?";
         if ([String]::IsNullOrWhiteSpace($ModelDir)) {
             $ModelDir = $defaultDir;
+        } else {
+            $ModelDir = [Path]::GetFullPath($ModelDir);
         }
     }
 }

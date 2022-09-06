@@ -21,7 +21,7 @@ jobs:
       - name: Run setup script
         shell: pwsh
         run: |
-          powershell -Version 5 -NoProfile -File .\setup.ps1 -Silent -Model codegen-350M-multi -DebugMode NotRemove -Verbose;
+          powershell -Version 5 -NoProfile -File ./setup.ps1 -Silent -Model codegen-350M-multi -DebugMode NotRemove -Verbose;
           if (-not $?) {
             Write-Error -Message "Setup failed" | Out-Null;
           }
