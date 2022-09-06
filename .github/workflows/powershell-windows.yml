@@ -1,0 +1,27 @@
+name: Windows PowerShell 5
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  windows-test:
+    name: Setup test in Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install 7z-zstd
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri 'https://github.com/mcmilk/7-Zip-zstd/releases/download/v21.03-v1.5.0-R2/7z21.03-zstd-x64.exe' -OutFile .\7z-zstd-installer.exe;
+          .\7z-zstd-installer.exe /S;
+      - name: Run setup script
+        shell: pwsh
+        run: |
+          powershell -Version 5 -NoProfile -File .\setup.ps1 -Silent -Model codegen-350M-multi -DebugMode NotRemove -Verbose;
+          if (-not $?) {
+            Write-Error -Message "Setup failed" | Out-Null;
+          }

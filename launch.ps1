@@ -52,22 +52,28 @@ if (-not (Get-Item -Path 'config.env' -ErrorAction SilentlyContinue)) {
     exit 1;
 }
 
+Write-Verbose -Message 'Read in config.env file' | Out-Null;
 Get-Content -Path 'config.env' -Encoding utf8NoBOM | ForEach-Object -Process {
     $name, $value = $_.Split('=');
+    Write-Verbose -Message "Name: $name, Value: $value" | Out-Null;
     Set-Variable -Name $name -Value $value;
     # [Environment]::SetEnvironmentVariable($name, $value);
 }
 
-
-[Environment]::SetEnvironmentVariable('NUM_GPUS', $NUM_GPUS);
-[Environment]::SetEnvironmentVariable('MODEL_DIR', ([Path]::Combine("$MODEL_DIR", "$MODEL-${NUM_GPUS}gpu")))
-[Environment]::SetEnvironmentVariable('GPUS', 0..($NUM_GPUS - 1) -join ',');
+[Environment]::SetEnvironmentVariable('NUM_GPUS', $NUM_GPUS) | Out-Null;
+Write-Verbose -Message "`$env:NUM_GPUS=$env:NUM_GPUS" | Out-Null;
+[Environment]::SetEnvironmentVariable('MODEL_DIR', ([Path]::Combine("$MODEL_DIR", "$MODEL-${NUM_GPUS}gpu"))) | Out-Null;
+Write-Verbose -Message "`$env:MODEL_DIR=$env:MODEL_DIR" | Out-Null;
+[Environment]::SetEnvironmentVariable('GPUS', 0..($NUM_GPUS - 1) -join ',') | Out-Null;
+Write-Verbose -Message "`$env:GPUS=$env:GPUS" | Out-Null;
 
 [ApplicationInfo]$dockerCompose = Get-Command -Name 'docker-compose' -ErrorAction SilentlyContinue;
 if ($null -ne $dockerCompose) {
+    Write-Verbose -Message 'up with docker-compose';
     &$dockerCompose up
 }
 else {
+    Write-Verbose -Message 'up with docker compose';
     [ApplicationInfo]$docker = Get-Command -Name 'docker';
     &$docker compose up
 }
