@@ -14,7 +14,7 @@ This is an attempt to build a locally hosted version of [GitHub Copilot](https:/
 - Windows PowerShell or pwsh
 - Docker
 - docker compose (version >= 1.28)
-- NVIDIA GPU (Compute Capability >= 7.0, That is TITAN V, RTX 20XX or newer)
+- NVIDIA GPU (Compute Capability >= 6.0, That is GTX 10XX or newer)
 - 7z-zstd
     > For Linux and macOS, you need zstd instead of this.
 
