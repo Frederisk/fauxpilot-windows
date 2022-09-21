@@ -218,8 +218,8 @@ if ($NumGpus -le 2) {
         }
     }
 
-    # DEBUG: NotUnzip
-    if (-not $DebugMode.Contains('NotUnzip')) {
+    # DEBUG: NotRemove
+    if (-not $DebugMode.Contains('NotRemove')) {
         Remove-Item -Path $archive -Force | Out-Null;
     }
 }
