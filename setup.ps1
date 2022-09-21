@@ -73,6 +73,10 @@ if ($Help) {
     exit 0;
 }
 
+if ($null -eq $DebugMode) {
+    $DebugMode = @();
+}
+
 # DEBUG: ForceCreate
 if ((Get-Item -Path "config.env" -ErrorAction SilentlyContinue) -and (-not $DebugMode.Contains('ForceCreate'))) {
     Write-Host -Object @"
