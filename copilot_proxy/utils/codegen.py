@@ -6,14 +6,14 @@ import time
 import numpy as np
 import tritonclient.grpc as client_util
 from tokenizers import Tokenizer
-from tritonclient.utils import np_to_triton_dtype
+from tritonclient.utils import np_to_triton_dtype, InferenceServerException
 
 np.finfo(np.dtype("float32"))
 np.finfo(np.dtype("float64"))
 
 
 class CodeGenProxy:
-    def __init__(self, host: str = 'localhost', port: int = 8001, verbose: bool = False):
+    def __init__(self, host: str = 'triton', port: int = 8001, verbose: bool = False):
         self.tokenizer = Tokenizer.from_file('/python-docker/cgtok/tokenizer.json')
         self.client = client_util.InferenceServerClient(url=f'{host}:{port}', verbose=verbose)
         self.PAD_CHAR = 50256
@@ -111,7 +111,7 @@ class CodeGenProxy:
         if stop_words is None:
             stop_words = []
         if stop_words:
-            stop_word_list = np.repeat(to_word_list_format([stop_words], self.tokenizer), input_start_ids.shape[0],
+            stop_word_list = np.repeat(self.to_word_list_format([stop_words], self.tokenizer), input_start_ids.shape[0],
                                        axis=0)
         else:
             stop_word_list = np.concatenate([np.zeros([input_start_ids.shape[0], 1, 1]).astype(
@@ -230,7 +230,12 @@ class CodeGenProxy:
 
     def __call__(self, data: dict):
         st = time.time()
-        completion, choices = self.generate(data)
+        try:
+            completion, choices = self.generate(data)
+        except InferenceServerException as E:
+            print(E)
+            completion = {}
+            choices = []
         ed = time.time()
         print(f"Returned completion in {(ed - st) * 1000} ms")
         if data.get('stream', False):
