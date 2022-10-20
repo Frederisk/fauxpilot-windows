@@ -19,7 +19,7 @@
 
 <#
 .SYNOPSIS
-    fauxpilot-windows-launch - Start fauxpilot in Windows.
+    fauxpilot-windows-shutdown - Stop fauxpilot in Windows.
 .DESCRIPTION
 
 .PARAMETER Help
@@ -46,12 +46,6 @@ if ($Help) {
     exit 0;
 }
 
-# Read in .env file; error if not found
-if (-not (Get-Item -Path '.env' -ErrorAction SilentlyContinue)) {
-    Write-Warning -Message '.env not found, running setup.ps1' | Out-Null;
-    & 'setup.ps1';
-}
-
 Write-Verbose -Message 'Read in .env file' | Out-Null;
 Get-Content -Path '.env' -Encoding utf8NoBOM | ForEach-Object -Process {
     $name, $value = $_.Split('=');
@@ -63,11 +57,11 @@ Get-Content -Path '.env' -Encoding utf8NoBOM | ForEach-Object -Process {
 try {
     [ApplicationInfo]$docker = Get-Command -Name 'docker';
     Write-Verbose -Message 'up with docker compose';
-    &$docker compose up -d --remove-orphans;
+    &$docker compose down --remove-orphans;
 }
 catch {
     Write-Verbose -Message $_.ToString();
     [ApplicationInfo]$dockerCompose = Get-Command -Name 'docker-compose';
     Write-Verbose -Message 'up with docker-compose';
-    &$dockerCompose up -d --remove-orphans;
+    &$dockerCompose down --remove-orphans;
 }

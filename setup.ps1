@@ -62,9 +62,15 @@ param (
     [String]$Model,
     [ValidateRange(1, [Int32]::MaxValue)]
     [Int32]$NumGpus,
+    [ValidateRange(0, 65535)]
+    [Int32]$ApiExternalPort,
+    [String]$TritonHost,
+    [ValidateRange(0, 65535)]
+    [Int32]$TritonPort,
     [String]$ModelDir,
     [Switch]$Silent,
-    [ValidateSet('NotDownload', 'NotRemove', 'NotUnzip', 'ForceCreate')]
+    [Switch]$Launch,
+    [ValidateSet('NotRemove', 'ForceDownload')]
     [String[]]$DebugMode
 )
 
@@ -77,21 +83,34 @@ if ($null -eq $DebugMode) {
     $DebugMode = @();
 }
 
-# DEBUG: ForceCreate
-if ((Get-Item -Path "config.env" -ErrorAction SilentlyContinue) -and (-not $DebugMode.Contains('ForceCreate'))) {
-    Write-Host -Object @"
-config.env already exists, skipping
-Please delete config.env if you want to re-run this script
-"@ | Out-Null;
-    exit 0;
+[String]$defaultDir = [Path]::Combine($pwd.Path, 'models');
+
+if ($Silent) {
+    Remove-Item -Path '.env' -Force -ErrorAction SilentlyContinue | Out-Null;
+    $Model = 'codegen-6B-multi';
+    $NumGpus = 1;
+    $ApiExternalPort = 5000;
+    $TritonHost = 'triton';
+    $TritonPort = 8001;
+    $ModelDir = $defaultDir;
+    $Launch = $false;
+}
+
+if (Get-Item -Path '.env' -ErrorAction SilentlyContinue) {
+    [String]$delete = Read-Host -Prompt '.env already exists, do you want to delete .env and recreate it? [y/n]';
+    if ($delete -like 'y') {
+        Write-Host -Object 'Deleting .env' | Out-Null;
+        Remove-Item -Path '.env' -Force | Out-Null;
+    }
+    else {
+        Write-Host -Object 'Exiting' | Out-Null;
+        exit 0;
+    }
 }
 
 if ([String]::IsNullOrWhiteSpace($Model)) {
-    if ($Silent) {
-        $Model = 'codegen-6B-multi';
-    }
-    else {
-        Write-Host -Object @"
+    Write-Host -Object @'
+Models available:
 [1] codegen-350M-mono (2GB total VRAM required; Python-only)
 [2] codegen-350M-multi (2GB total VRAM required; multi-language)
 [3] codegen-2B-mono (7GB total VRAM required; Python-only)
@@ -100,97 +119,105 @@ if ([String]::IsNullOrWhiteSpace($Model)) {
 [6] codegen-6B-multi (13GB total VRAM required; multi-language)
 [7] codegen-16B-mono (32GB total VRAM required; Python-only)
 [8] codegen-16B-multi (32GB total VRAM required; multi-language)
-"@ | Out-Null;
-        # Read their choice
-        [Int32]$modelNum = Read-Host -Prompt "Enter your choice [6]";
-        # Convert model number to model name
-        $Model = switch ($modelNum) {
-            1 { "codegen-350M-mono"; }
-            2 { "codegen-350M-multi"; }
-            3 { "codegen-2B-mono"; }
-            4 { "codegen-2B-multi"; }
-            5 { "codegen-6B-mono"; }
-            6 { "codegen-6B-multi"; }
-            7 { "codegen-16B-mono"; }
-            8 { "codegen-16B-multi"; }
-            Default { "codegen-6B-multi"; }
-        };
+'@ | Out-Null;
+    # Read their choice
+    [Int32]$modelNum = Read-Host -Prompt 'Enter your choice [6]';
+    # Convert model number to model name
+    $Model = switch ($modelNum) {
+        1 { 'codegen-350M-mono'; }
+        2 { 'codegen-350M-multi'; }
+        3 { 'codegen-2B-mono'; }
+        4 { 'codegen-2B-multi'; }
+        5 { 'codegen-6B-mono'; }
+        6 { 'codegen-6B-multi'; }
+        7 { 'codegen-16B-mono'; }
+        8 { 'codegen-16B-multi'; }
+        Default { 'codegen-6B-multi'; }
+    };
+}
+
+# Read number of GPUs
+if ($NumGpus -le 0) {
+    # Read number of GPUs
+    $NumGpus = Read-Host -Prompt 'Enter number of GPUs [1]';
+    if ($NumGpus -le 0) {
+        $NumGpus = 1;
     }
 }
 
-if ($NumGpus -le 0) {
-    if ($Silent) {
-        $NumGpus = 1;
+if ($ApiExternalPort -le 0) {
+    $ApiExternalPort = Read-Host -Prompt 'External port for the API [5000]';
+    if ($ApiExternalPort -le 0) {
+        $ApiExternalPort = 5000;
     }
-    else {
-        # Read number of GPUs
-        [Int32]$NumGpus = Read-Host -Prompt "Enter number of GPUs [1]";
-        if ($NumGpus -le 0) {
-            $NumGpus = 1;
-        }
+}
+
+if ([String]::IsNullOrWhiteSpace($TritonHost)) {
+    $TritonHost = Read-Host -Prompt 'Address for Triton [triton]';
+    if ([String]::IsNullOrWhiteSpace($TritonHost)) {
+        $TritonHost = 'triton';
+    }
+}
+
+if ($TritonPort -le 0) {
+    $TritonPort = Read-Host -Prompt 'Port of Triton host [8001]';
+    if ($TritonPort -le 0) {
+        $TritonPort = 8001;
     }
 }
 
 if ([String]::IsNullOrWhiteSpace($ModelDir)) {
-    [String]$defaultDir = [Path]::Combine($pwd.Path, "models");
-    if ($Silent) {
+    # Read model directory
+    $ModelDir = Read-Host -Prompt "Where do you want to save the model [$([Path]::Combine($pwd.Path, 'models'))]?";
+    if ([String]::IsNullOrWhiteSpace($ModelDir)) {
         $ModelDir = $defaultDir;
     }
     else {
-        # Read model directory
-        $ModelDir = Read-Host -Prompt "Where do you want to save the model [$([Path]::Combine($pwd.Path, "models"))]?";
-        if ([String]::IsNullOrWhiteSpace($ModelDir)) {
-            $ModelDir = $defaultDir;
-        }
-        else {
-            $ModelDir = [Path]::GetFullPath($ModelDir);
-        }
+        $ModelDir = [Path]::GetFullPath($ModelDir);
     }
 }
 
-# Write config.env
-New-Item -Name "config.env" -ItemType File -Value @"
+# Write .env
+New-Item -Name '.env' -ItemType File -Value @"
 MODEL=$Model
 NUM_GPUS=$NumGpus
-MODEL_DIR=$ModelDir
+MODEL_DIR=$ModelDir/$Model-${NumGpus}gpu
+API_EXTERNAL_PORT=$ApiExternalPort
+TRITON_HOST=$TritonHost
+TRITON_PORT=$TritonPort
+GPUS=$(0..($NumGpus - 1) -join ',')
 "@ | Out-Null;
 
-# DEBUG: ForceCreate
-if ((Get-Item -Path ([Path]::Combine($ModelDir, "$Model-${NumGpus}gpu")) -ErrorAction SilentlyContinue) -and (-not $DebugMode.Contains('ForceCreate'))) {
-    Write-Host -Object @"
-Converted model for $Model-${NumGpus}gpu already exists, skipping
-Please delete $([Path]::Combine($ModelDir, "$Model-${NumGpus}gpu")) if you want to re-convert it
-"@ | Out-Null;
-    exit 0;
+[Boolean]$download = $false;
+# DEBUG: ForceDownload
+if ((Get-Item -Path ([Path]::Combine($ModelDir, "$Model-${NumGpus}gpu") -and (-not $DebugMode.Contains('ForceDownload')) -and (-not $Silent)) -ErrorAction SilentlyContinue)) {
+    Write-Host -Object 'Model $ModelDir/$Model-${NumGpus}gpu already exists.'
+    [String]$reuse = Read-Host -Prompt 'Do you want to re-use it? [y/n]';
+    if (-not $reuse -like 'y') {
+        $download = $true;
+    }
+}
+else {
+    $download = $true;
 }
 
-# Create model directory
-New-Item -Path $ModelDir -ItemType Directory -Force | Out-Null;
-
-# For some of the models we can download it pre-converted.
-if ($NumGpus -le 2) {
-    Write-Host -Object "Downloading the model from HuggingFace, this will take a while..." | Out-Null;
-    [String]$scriptDir = $PSScriptRoot;
-    [String]$dest = "$Model-${NumGpus}gpu";
-    [String]$archive = ([Path]::Combine($ModelDir, "$dest.tar.zst"));
-    Copy-Item -Path ([Path]::Combine($scriptDir, 'converter', 'models', $dest)) -Destination $ModelDir -Recurse | Out-Null;
-
-    # DEBUG: NotDownload
-    if (-not $DebugMode.Contains('NotDownload')) {
+if ($download) {
+    # Create model directory
+    New-Item -Path $ModelDir -ItemType Directory -Force | Out-Null;
+    # For some of the models we can download it pre-converted.
+    if ($NumGpus -le 2) {
+        Write-Host -Object 'Downloading the model from HuggingFace, this will take a while...' | Out-Null;
+        [String]$scriptDir = $PSScriptRoot;
+        [String]$dest = "$Model-${NumGpus}gpu";
+        [String]$archive = ([Path]::Combine($ModelDir, "$dest.tar.zst"));
+        Copy-Item -Path ([Path]::Combine($scriptDir, 'converter', 'models', $dest)) -Destination $ModelDir -Recurse | Out-Null;
         # Progress bar can significantly impact cmdlet performance
         # https://github.com/PowerShell/PowerShell/issues/2138
         if ($PSVersionTable.PSVersion.Major -lt 6) {
             $ProgressPreference = 'SilentlyContinue';
         }
-
         Invoke-WebRequest -Uri "https://huggingface.co/moyix/$Model-gptj/resolve/main/$Model-${NumGpus}gpu.tar.zst" -OutFile $archive | Out-Null;
-    }
-    else {
-        Write-Host -Object "Download skipped: https://huggingface.co/moyix/$Model-gptj/resolve/main/$Model-${NumGpus}gpu.tar.zst" | Out-Null;
-    }
 
-    # DEBUG: NotUnzip
-    if (-not $DebugMode.Contains('NotUnzip')) {
         if ($IsWindows -or ($null -eq $IsWindows)) {
             [ApplicationInfo]$7z = Get-Command -Name "$env:ProgramFiles\7-Zip-Zstandard\7z.exe" -ErrorAction SilentlyContinue;
             if (-not $7z) {
@@ -199,10 +226,6 @@ if ($NumGpus -le 2) {
             if (-not $7z) {
                 $7z = Get-Command -Name '7z';
             }
-            # if(-not $7z){
-            #     Write-Error -Message "Command 7z not found" -Category ObjectNotFound -TargetObject $7z;
-            #     exit 1;
-            # }
             # Powershell will buffer the input to the second 7z process so can consume a lot of memory if your tar file is large.
             # https://stackoverflow.com/a/14699663/10135995
             [ApplicationInfo]$cmd = Get-Command -Name 'cmd';
@@ -216,16 +239,30 @@ if ($NumGpus -le 2) {
             Write-Host -Object "Unknown OS. Please unzip $archive in the same folder by yourself." | Out-Null;
             exit 1;
         }
+        # DEBUG: NotRemove
+        if (-not $DebugMode.Contains('NotRemove')) {
+            Remove-Item -Path $archive -Force | Out-Null;
+        }
     }
+    else {
+        Write-Host -Object 'Downloading and converting the model, this will take a while...' | Out-Null;
+        [ApplicationInfo]$docker = Get-Command -Name 'docker';
+        &$docker run --rm -v ${ModelDir}:/model -e MODEL=$NumGpus -e NUM_GPUS=$NumGpus moyix/model_converter:latest;
+    }
+}
 
-    # DEBUG: NotRemove
-    if (-not $DebugMode.Contains('NotRemove')) {
-        Remove-Item -Path $archive -Force | Out-Null;
-    }
+if ($Launch) {
+    & 'launch.ps1';
+}
+elseif ($Silent) {
+    Write-Host -Object "Done! Now run $([Path]::Combine('.', 'launch.ps1')) to start the FauxPilot server." | Out-Null;
 }
 else {
-    Write-Host -Object "Downloading and converting the model, this will take a while..." | Out-Null;
-    [ApplicationInfo]$docker = Get-Command -Name 'docker';
-    &$docker run --rm -v ${ModelDir}:/model -e MODEL=$NumGpus -e NUM_GPUS=$NumGpus moyix/model_converter:latest;
+    [String]$run = Read-Host -Prompt 'Config complete, do you want to run FauxPilot? [y/n]';
+    if ($run -like 'y') {
+        & 'launch.ps1';
+    }
+    else {
+        Write-Host -Object 'You can run $([Path]::Combine('.', 'launch.ps1')) to start the FauxPilot server.' | Out-Null;
+    }
 }
-Write-Host -Object "Done! Now run $([Path]::Combine('.', 'launch.ps1')) to start the FauxPilot server." | Out-Null;
