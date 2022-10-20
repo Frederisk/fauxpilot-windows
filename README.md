@@ -24,6 +24,8 @@ Note that the VRAM requirements listed by `setup.ps1` are *total* -- if you have
 
 lmao
 
+Okay, fine, we now have some minimal information on [the wiki](https://github.com/moyix/fauxpilot/wiki) and a [discussion forum](https://github.com/moyix/fauxpilot/discussions) where you can ask questions. Still no formal support or warranty though!
+
 ## Setup
 
 1. Install Docker and Docker Compose, The easiest way is to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
@@ -101,6 +103,17 @@ lmao
 ## Copilot Plugin Support
 
 Yes, it's possible. Please check [this issue](https://github.com/moyix/fauxpilot/issues/1).
+
+## Terminology
+
+- API: Application Programming Interface
+- CC: Compute Capability
+- CUDA: Compute Unified Device Architecture
+- FT: Faster Transformer
+- JSON: JavaScript Object Notation
+- gRPC: Remote Procedure call by Google
+- GPT-J: A transformer model trained using Ben Wang's Mesh Transformer JAX
+- REST: REpresentational State Transfer
 
 ## Acknowledgement
 
