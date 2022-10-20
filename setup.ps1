@@ -87,13 +87,24 @@ if ($null -eq $DebugMode) {
 
 if ($Silent) {
     Remove-Item -Path '.env' -Force -ErrorAction SilentlyContinue | Out-Null;
-    $Model = 'codegen-6B-multi';
-    $NumGpus = 1;
-    $ApiExternalPort = 5000;
-    $TritonHost = 'triton';
-    $TritonPort = 8001;
-    $ModelDir = $defaultDir;
-    $Launch = $false;
+    if ([String]::IsNullOrWhiteSpace($Model)) {
+        $Model = 'codegen-6B-multi';
+    }
+    if ($NumGpus -le 0) {
+        $NumGpus = 1;
+    }
+    if ($ApiExternalPort -le 0) {
+        $ApiExternalPort = 5000;
+    }
+    if ([String]::IsNullOrWhiteSpace($TritonHost)) {
+        $TritonHost = 'triton';
+    }
+    if ($TritonPort -le 0) {
+        $TritonPort = 8001;
+    }
+    if ([String]::IsNullOrWhiteSpace($ModelDir)) {
+        $ModelDir = $defaultDir;
+    }
 }
 
 if (Get-Item -Path '.env' -ErrorAction SilentlyContinue) {
