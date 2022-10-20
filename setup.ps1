@@ -28,6 +28,14 @@
     Specify the codegen model to use.
 .PARAMETER NumGpus
     Set the number of GPUs in your device.
+.PARAMETER ApiExternalPort
+    Set the port which Fauxpilot used.
+.PARAMETER TritonHost
+    Set the Host name which Triton used.
+.PARAMETER TritonPort
+    Set the port which Triton used.
+.PARAMETER Launch
+    Launch docker after all done.
 .PARAMETER ModelDir
     Determines where to store model files.
 .PARAMETER Silent
