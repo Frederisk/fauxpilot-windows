@@ -38,7 +38,7 @@ using namespace System.IO;
 
 [CmdletBinding()]
 param (
-    [Switch][Alias('h', '?')]$Help
+    [Switch][Alias('h')]$Help
 )
 
 if ($Help) {

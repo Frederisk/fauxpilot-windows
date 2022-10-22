@@ -56,8 +56,7 @@ using namespace System.IO;
 
 [CmdletBinding()]
 param (
-    [Alias('h', '?')]
-    [Switch]$Help,
+    [Switch][Alias('h')]$Help,
     [ValidateSet(
         'codegen-350M-mono',
         'codegen-350M-multi',
