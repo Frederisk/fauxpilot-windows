@@ -3,36 +3,34 @@
 # top-most EditorConfig file
 root = true
 
-################################################################
-# general fallback
-################################################################
 [*]
-charset = utf-8
-# space and indent
 indent_style = space
 indent_size = 4
 tab_width = 4
-# newline
-end_of_line = crlf
+# end_of_line = crlf
+charset = utf-8
 trim_trailing_whitespace = true
-insert_final_newline = true
-
-################################################################
-# JSON
-################################################################
-
-[*.{json,jsonc}]
-# space and indent
-indent_style = space
-indent_size = 2
-# newline
 insert_final_newline = false
 
-################################################################
-# PowerShell
-################################################################
+# Markdown
+[*.{md}]
+indent_style = space
+indent_size = 2
+insert_final_newline = true
 
-[*.{ps1,psm1,psd1}]
+# Serialized data
+[*.{yml,yaml,json,pbtxt}]
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+
+# Shell script
+[*.{sh,bash,bashrc,zsh,fish,ksh,csh}]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+
+# PowerShell
 # Windows PowerShell (aka. PowerShell 5.*) may misinterprets your script as being encoded in the legacy "ANSI" codepage. Conversely, files that do have the UTF-8 BOM can be problematic on Unix-like platforms. Many Unix tools such as cat, sed, awk, and some editors such as gedit don't know how to treat the BOM.
 # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding
 charset = utf-8
@@ -42,14 +40,20 @@ indent_size = 4
 # newline
 insert_final_newline = true
 
-################################################################
-# YAML
-################################################################
-
-[*.{yaml,yml}]
-# space and indent
-indent_size = 2
+# Python
+[*.py]
 indent_style = space
-tab_width = 2
-# newline
+indent_size = 4
+insert_final_newline = true
+
+# Environment
+[*.env]
+insert_final_newline = false
+
+# Python requirements
+[requirements.txt]
+insert_final_newline = true
+
+# Dockerfile
+[Dockerfile]
 insert_final_newline = true
