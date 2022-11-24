@@ -394,7 +394,7 @@ else {
 }
 
 if ($Launch) {
-    & 'launch.ps1';
+    &([Path]::Combine('.', 'launch.ps1'));
 }
 elseif ($Silent) {
     Write-Host -Object "Done! Now run $([Path]::Combine('.', 'launch.ps1')) to start the FauxPilot server." | Out-Null;
@@ -402,7 +402,7 @@ elseif ($Silent) {
 else {
     [String]$run = Read-Host -Prompt 'Config complete, do you want to run FauxPilot? [y/n]';
     if ($run -like 'y') {
-        & 'launch.ps1';
+        &([Path]::Combine('.', 'launch.ps1'));
     }
     else {
         Write-Host -Object 'You can run $([Path]::Combine('.', 'launch.ps1')) to start the FauxPilot server.' | Out-Null;
