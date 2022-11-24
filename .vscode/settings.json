@@ -3,6 +3,7 @@
         "codegen",
         "CUDA",
         "fauxpilot",
+        "huggingface",
         "moyix",
         "VRAM",
         "zstd"
