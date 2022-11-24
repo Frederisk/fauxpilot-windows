@@ -42,7 +42,7 @@ param (
 )
 
 if ($Help) {
-    Get-Help ($MyInvocation.MyCommand.Definition) -Full | Out-Host -Paging;
+    Get-Help -Name ($MyInvocation.MyCommand.Definition) -Full | Out-Host;
     exit 0;
 }
 

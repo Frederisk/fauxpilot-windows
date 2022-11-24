@@ -82,7 +82,7 @@ param (
 )
 
 if ($Help) {
-    Get-Help ($MyInvocation.MyCommand.Definition) -Full | Out-Host -Paging;
+    Get-Help -Name ($MyInvocation.MyCommand.Definition) -Full | Out-Host;
     exit 0;
 }
 
@@ -195,7 +195,7 @@ if ([String]::IsNullOrWhiteSpace($ModelDir)) {
     }
 }
 
-# Write .env
+Write-Verbose -Message 'Write .env file' | Out-Null;
 New-Item -Name '.env' -ItemType File -Value @"
 MODEL=$Model
 NUM_GPUS=$NumGpus
@@ -229,14 +229,21 @@ if ($download) {
         [String]$dest = "$Model-${NumGpus}gpu";
         [String]$archive = ([Path]::Combine($ModelDir, "$dest.tar.zst"));
         Copy-Item -Path ([Path]::Combine($scriptDir, 'converter', 'models', $dest)) -Destination $ModelDir -Recurse | Out-Null;
-        # Progress bar can significantly impact cmdlet performance
-        # https://github.com/PowerShell/PowerShell/issues/2138
+
         if ($PSVersionTable.PSVersion.Major -lt 6) {
+            Write-Verbose -Message @"
+Progress bar can significantly impact cmdlet performance.
+See: https://github.com/PowerShell/PowerShell/issues/2138.
+Set `$ProgressPreference as SilentlyContinue to Disable it.
+"@ | Out-Null;
             $ProgressPreference = 'SilentlyContinue';
         }
-        Invoke-WebRequest -Uri "https://huggingface.co/moyix/$Model-gptj/resolve/main/$Model-${NumGpus}gpu.tar.zst" -OutFile $archive | Out-Null;
+        [String]$downloadUri = "https://huggingface.co/moyix/$Model-gptj/resolve/main/$Model-${NumGpus}gpu.tar.zst";
+        Write-Verbose -Message "Download Uri: $downloadUri" | Out-Null;
+        Invoke-WebRequest -Uri $downloadUri -OutFile $archive | Out-Null;
 
         if ($IsWindows -or ($null -eq $IsWindows)) {
+            Write-Verbose -Message 'System Type: Windows' | Out-Null;
             [ApplicationInfo]$7z = Get-Command -Name "$env:ProgramFiles\7-Zip-Zstandard\7z.exe" -ErrorAction SilentlyContinue;
             if (-not $7z) {
                 $7z = Get-Command -Name "${env:ProgramFiles(x86)}\7-Zip-Zstandard\7z.exe" -ErrorAction SilentlyContinue;
@@ -247,9 +254,11 @@ if ($download) {
             # Powershell will buffer the input to the second 7z process so can consume a lot of memory if your tar file is large.
             # https://stackoverflow.com/a/14699663/10135995
             [ApplicationInfo]$cmd = Get-Command -Name 'cmd';
+            Write-Verbose -Message 'Unzipping...' | Out-Null;
             &$cmd /C "`"$($7z.Source)`" x $archive -so | `"$($7z.Source)`" x -aoa -si -ttar -o`"$ModelDir`"";
         }
         elseif ($IsLinux -or $IsMacOS) {
+            Write-Verbose -Message 'System Type: Linux or MacOS' | Out-Null;
             [ApplicationInfo]$bash = Get-Command -Name 'bash';
             &$bash -c "zstd -dc '$archive' | tar -xf - -C '$ModelDir'";
         }
@@ -257,8 +266,9 @@ if ($download) {
             Write-Host -Object "Unknown OS. Please unzip $archive in the same folder by yourself." | Out-Null;
             exit 1;
         }
-        # DEBUG: NotRemove
+
         if (-not $DebugMode.Contains('NotRemove')) {
+            Write-Verbose -Message 'DEBUG: NotRemove' | Out-Null;
             Remove-Item -Path $archive -Force | Out-Null;
         }
     }
