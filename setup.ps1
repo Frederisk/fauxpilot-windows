@@ -302,6 +302,11 @@ Set `$ProgressPreference as SilentlyContinue to Disable it.
             &$docker run --rm -v ${ModelDir}:/model -e MODEL=$NumGpus -e NUM_GPUS=$NumGpus moyix/model_converter:latest;
         }
     }
+
+    # Not used for this backend but needs to be present
+    $HfCacheDir = [Path]::Combine($pwd, '.hf_cache');
+    New-Item -Path $HfCacheDir -ItemType Directory -Force | Out-Null;
+    Add-Content -Path '.env' -Value "HF_CACHE_DIR=$HfCacheDir" | Out-Null;
 }
 
 function Set-PythonBackend {
