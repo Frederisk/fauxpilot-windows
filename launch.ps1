@@ -38,7 +38,8 @@ using namespace System.IO;
 
 [CmdletBinding()]
 param (
-    [Switch][Alias('h')]$Help
+    [Switch][Alias('h')]$Help,
+    [Switch]$Daemon
 )
 
 if ($Help) {
@@ -63,11 +64,21 @@ Get-Content -Path '.env' -Encoding utf8NoBOM | ForEach-Object -Process {
 try {
     [ApplicationInfo]$docker = Get-Command -Name 'docker';
     Write-Verbose -Message 'up with docker compose';
-    &$docker compose up -d --remove-orphans;
+    if($Daemon){
+        &$docker compose up -d --remove-orphans;
+    }
+    else {
+        &$docker compose up --remove-orphans;
+    }
 }
 catch {
     Write-Verbose -Message $_.ToString();
     [ApplicationInfo]$dockerCompose = Get-Command -Name 'docker-compose';
     Write-Verbose -Message 'up with docker-compose';
-    &$dockerCompose up -d --remove-orphans;
+    if ($Daemon) {
+        &$dockerCompose up -d --remove-orphans;
+    }
+    else {
+        &$dockerCompose up --remove-orphans;
+    }
 }
