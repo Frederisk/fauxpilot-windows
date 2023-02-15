@@ -354,8 +354,8 @@ function Set-PythonBackend {
 
     # use int8? Allows larger models to fit in GPU but might be very marginally slower
     if ([String]::IsNullOrWhiteSpace($UseInt8)) {
-        $UseInt8 = Read-Host -Prompt 'Do you want to use int8? y/n [y]';
-        if ($UseInt8 -like 'n') {
+        $UseInt8 = Read-Host -Prompt 'Do you want to use int8? y/n [n]';
+        if (-not ($UseInt8 -like 'y')) {
             $UseInt8 = '0';
         }
         else {
