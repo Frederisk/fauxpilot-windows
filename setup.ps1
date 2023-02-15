@@ -122,7 +122,7 @@ if ($Silent) {
         $HfCacheDir = [Path]::Combine($pwd, '.hf_cache');
     }
     if ([String]::IsNullOrWhiteSpace([String]$UseInt8)) {
-        $UseInt8 = '1';
+        $UseInt8 = '0';
     }
 }
 
