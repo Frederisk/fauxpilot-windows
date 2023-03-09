@@ -33,6 +33,7 @@
 #>
 
 using namespace System;
+using namespace System.Text.RegularExpressions;
 using namespace System.Management.Automation;
 using namespace System.IO;
 
@@ -61,20 +62,23 @@ Get-Content -Path '.env' -Encoding utf8NoBOM | ForEach-Object -Process {
     [Environment]::SetEnvironmentVariable($name, $value);
 }
 
-try {
-    [ApplicationInfo]$docker = Get-Command -Name 'docker';
-    Write-Verbose -Message 'up with docker compose';
-    if($Daemon){
+[ApplicationInfo]$docker = Get-Command -Name 'docker';
+[String]$dockerVersionOutput = &$docker --version 2>&1;
+[String]$versionString = [Regex]::Match($dockerVersionOutput, '(?<=version\s*)[0-9]*\.[0-9]*\.[0-9]*');
+Write-Verbose -Message "docker version: $versionString" | Out-Null;
+[Version]$version = [Version]::new($versionString);
+if ($version -ge ([Version]::new('20.10.2'))) {
+    Write-Verbose -Message 'up with docker compose' | Out-Null;
+    if ($Daemon) {
         &$docker compose up -d --remove-orphans;
     }
     else {
         &$docker compose up --remove-orphans;
     }
 }
-catch {
-    Write-Verbose -Message $_.ToString();
+else {
     [ApplicationInfo]$dockerCompose = Get-Command -Name 'docker-compose';
-    Write-Verbose -Message 'up with docker-compose';
+    Write-Verbose -Message 'up with docker-compose' | Out-Null;
     if ($Daemon) {
         &$dockerCompose up -d --remove-orphans;
     }
