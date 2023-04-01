@@ -7,7 +7,7 @@
 
 For Linux or WSL2, click [here](https://github.com/moyix/fauxpilot). This repository is also available on Linux and macOS if you are also using `pwsh` on it.
 
-This is an attempt to build a locally hosted version of [GitHub Copilot](https://copilot.github.com/). It uses the [SalesForce CodeGen](https://github.com/salesforce/CodeGen) models inside of NVIDIA's [Triton Inference Server](https://developer.nvidia.com/nvidia-triton-inference-server) with the [FasterTransformer backend](https://github.com/triton-inference-server/fastertransformer_backend/).
+This is an attempt to build a locally hosted alternative to [GitHub Copilot](https://copilot.github.com/). It uses the [SalesForce CodeGen](https://github.com/salesforce/CodeGen) models inside of NVIDIA's [Triton Inference Server](https://developer.nvidia.com/nvidia-triton-inference-server) with the [FasterTransformer backend](https://github.com/triton-inference-server/fastertransformer_backend/).
 
 <p align="right">
   <img width="50%" align="right" src="./img/fauxpilot.png">
